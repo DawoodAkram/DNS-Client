@@ -2,6 +2,7 @@ import bufferManipulator from "./buffer"
 
 class Answer{
 
+
     parseDomain(buff: bufferManipulator) {
         // To get the offset
         let str:string=buff.peek(4)

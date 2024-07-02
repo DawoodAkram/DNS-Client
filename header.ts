@@ -3,6 +3,40 @@ import { DNSFlags } from './DNSFlags';
 
 class Header{
 
+    private constructor(
+        private readonly id:number,
+        private readonly flags:DNSFlags,
+        private readonly QDCount:number,
+        private readonly ANCount:number,
+        private readonly NSCount:number,
+        private readonly ARCount:number
+    ){}
+
+    get ID(){
+        return this.ID
+    }
+
+    get FLAGS(){
+        return this.flags
+    }
+
+    get QDCOUNT(){
+        return this.QDCOUNT
+    }
+
+    get ANCOUNT(){
+        return this.ANCount
+    }
+    
+    get NSCOUNT(){
+        return this.NSCount
+    }
+
+    get ARCOUNT(){
+        return this.ARCount
+    }
+
+
     static headerEncode(){
         const buffer = Buffer.alloc(12);
 
@@ -22,12 +56,13 @@ class Header{
         return buffer
     }
 
-    parseId(buff: bufferManipulator){
+    static parseId(buff: bufferManipulator){
         let idd=buff.sendint(4)
         console.log('Request ID = ', idd)
+        return idd;
     }
     
-    parseFlag(buff: bufferManipulator){
+    static parseFlag(buff: bufferManipulator){
 
         let flag = new DNSFlags(buff.sendint(2),buff.sendint(2))    // Left byte , Right Byte
         
@@ -42,14 +77,35 @@ class Header{
             RCODE:flag.rCode
         }
         console.log(flag_Data)
+        return flag
     }
 
-    decodeHeader(buff: bufferManipulator){
+    static parseMeta(response: bufferManipulator){
+
+        let q_count=response.sendint(4)
+        console.log('Questions Asked',q_count)
+  
+        let a_count=response.sendint(4)
+        console.log('Answer Count =',a_count)
+
+        let auth_count=response.sendint(4)
+        console.log('Authority Count =',auth_count)
+
+        let add_count=response.sendint(4)
+        console.log('Additional Count =',add_count)
+
+        return {q_count,a_count,auth_count,add_count}
+    }
+
+    static decodeHeader(buff: bufferManipulator){
         console.log('-------------')
         console.log("Header Part")
         console.log('-------------')
-        this.parseId(buff)
-        this.parseFlag(buff)
+        let id = this.parseId(buff)
+        let flags = this.parseFlag(buff)
+        const {q_count,a_count,auth_count,add_count} =this.parseMeta(buff)
+        
+        return new Header(id,flags,q_count,a_count,auth_count,add_count)
     }
 
 }
