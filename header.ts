@@ -1,6 +1,26 @@
 import bufferManipulator from './buffer';
+import { DNSFlags } from './DNSFlags';
 
 class Header{
+
+    static headerEncode(){
+        const buffer = Buffer.alloc(12);
+
+        buffer.writeUInt16BE(Math.floor(Math.random()*65535)); 
+
+        // Flags
+        buffer.writeUInt16BE(0x0120, 2);
+
+        // Questions
+        buffer.writeUInt16BE(1, 4);
+
+        // Answer RRs, Authority RRs, Additional RRs
+        buffer.writeUInt16BE(0, 6);
+        buffer.writeUInt16BE(0, 8);
+        buffer.writeUInt16BE(0, 10);
+
+        return buffer
+    }
 
     parseId(buff: bufferManipulator){
         let idd=buff.sendint(4)
@@ -9,16 +29,17 @@ class Header{
     
     parseFlag(buff: bufferManipulator){
 
-        let flag=buff.sendbin(4)
+        let flag = new DNSFlags(buff.sendint(2),buff.sendint(2))    // Left byte , Right Byte
+        
         const flag_Data={
-            QR: parseInt(flag[0],2),
-            OPCode:parseInt(flag.slice(1,5),2),
-            AA:parseInt(flag[5],2),
-            TC:parseInt(flag[6],2),
-            RD:parseInt(flag[7],2),
-            RA:parseInt(flag[8],2),
-            Z:parseInt(flag.slice(9,12),2),
-            RCODE:parseInt(flag.slice(12,),2)
+            QR: flag.qr,
+            OPCode:flag.opCode,
+            AA:flag.aa,
+            TC:flag.tc,
+            RD:flag.rd,
+            RA:flag.ra,
+            Z:flag.z,
+            RCODE:flag.rCode
         }
         console.log(flag_Data)
     }

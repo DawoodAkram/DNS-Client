@@ -11,7 +11,6 @@ function parser(response: Buffer){
     const ques=new Question()
     const ans=new Answer()
     head.decodeHeader(buff)
-    //let a_count=ques.quesDecode(buff)
     ans.answerDecode(buff,ques.quesDecode(buff))
 }
 

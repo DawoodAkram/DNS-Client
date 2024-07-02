@@ -1,5 +1,3 @@
-import { off } from "process";
-
 class bufferManipulator{
     
     response:Buffer
@@ -29,29 +27,11 @@ class bufferManipulator{
         return name
     }
 
-    sendbin(length:number):string{
-        let str=this.response.toString('hex')
-        let flag=str.slice(this.offset,this.offset+length)
-        console.log('Flags = ',flag)
-        let b_string:string=''
-        // Iterate over the hex string in pairs
-        for (let i = 0; i < flag.length; i += 2) {
-            const hexPair = flag.substr(i, 2);
-            
-            const decimalValue = parseInt(hexPair, 16);
-            const binaryValue = decimalValue.toString(2).padStart(8, '0');
-            
-            // Append binary value to the result string
-            b_string += binaryValue;
-        }
-        this.offset+=length;
-        return b_string
-    }
 
     peek(length: number): string {
         let str=this.response.toString('hex')
         let flag=str.slice(this.offset,this.offset+length)
-        console.log('Looking for Offset Value = ',flag)
+        //console.log('Looking for Offset Value = ',flag)
         let b_string:string=''
         for (let i = 0; i < flag.length; i += 2) {
             const hexPair = flag.substr(i, 2);
@@ -91,6 +71,7 @@ class bufferManipulator{
     }
 
     add() {
+        console.log(this.offset)
         this.offset+=2
     }
 

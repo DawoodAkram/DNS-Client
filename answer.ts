@@ -43,7 +43,7 @@ class Answer{
         return type
     }
 
-    parseIp(buff: bufferManipulator, a_count: number, type: number) {
+    parseResult(buff: bufferManipulator, a_count: number, type: number) {
         
         let IP: string = "";
     
@@ -57,9 +57,9 @@ class Answer{
             }
             console.log("IP = ", IP);
 
-        } else if (type === 28) {
+        } else if (type === 28) {   // IPv6
             for (let i = 0; i < 8; i++) {
-                let part = buff.sendint(4).toString(16); // Get each 16-bit part
+                let part = buff.sendint(4).toString(16);
                 IP += part;
                 if (i != 7) {
                     IP += ':';
@@ -69,31 +69,50 @@ class Answer{
 
         }
         else if(type===6 || type===2){
-            let str:string=buff.peek(4)
-            if((parseInt(str[0],2)==1) && (parseInt(str[1],2)==1)){
-                let new_str=str.slice(2,)
-                let decimalNumber = parseInt(new_str, 2);
-                let len=buff.peekint(decimalNumber*2)
-                console.log('Domain Name = ',buff.getbytes(decimalNumber*2,len))
-                buff.add()
-                buff.add()
-            }
-            else{
-                console.log('Not a Pointer')
-                //let idd=buff.sendint(2)
-                //console.log("LENGTH = ",idd)
-                for(let i=0;i<5;i++){
-                    let length=buff.sendint(2)
-                    console.log('Length = ',length)
-                    if(length===0){
-                        console.log('Inside ' )
-                        break;
+                let name:string=""
+                for(let i=0;i<4;i++){
+                    let str:string=buff.peek(4)
+        
+                    if((parseInt(str[0],2)==1) && (parseInt(str[1],2)==1)){
+                        let new_str=str.slice(2,)
+                        let decimalNumber = parseInt(new_str, 2);
+                        let len=buff.peekint(decimalNumber*2)
+                        let temp=buff.getbytes(decimalNumber*2,len)
+                        name+=temp
+                        console.log(temp)
+                        if(temp==='com'){
+                            console.log('RECASD')
+                            buff.add()
+                            buff.add()
+                            console.log('NS =' ,name)
+                            return
+                        }
+                        buff.add()
+                        buff.add()
+                    }else{
+                        let length=buff.sendint(2)
+                        if(length===0){
+                            console.log('Inside ' )
+                            console.log('NS =' ,name)
+                            return
+                        }
+                        let temp=buff.sendstr(length)
+                        name+=temp
+                        console.log(temp)
+                        if(temp=='com'){
+                            console.log('NS =' ,name)
+                            return
+                        }
                     }
-                    let name=buff.sendstr(length)
-                    console.log(name)
+
+                    let helper:string=buff.peek(4)
+                    console.log((parseInt(helper[0],2)) ,(parseInt(helper[1],2)))
+                    if(i!=2){
+                        name+='.'
+                    }    
                 }
-                buff.add()
-            }
+                //console.log('NS =' ,name)
+            
         }
     
 
@@ -110,7 +129,7 @@ class Answer{
             console.log('\n--> Answer (',i+1,')')
             this.parseDomain(buff)
             let type=this.parseRecord(buff)
-            this.parseIp(buff,a_count,type)
+            this.parseResult(buff,a_count,type)
         }
         return
     }
