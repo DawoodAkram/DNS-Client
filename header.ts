@@ -1,34 +1,111 @@
 import bufferManipulator from './buffer';
+import { DNSFlags } from './DNSFlags';
 
 class Header{
 
-    parseId(buff: bufferManipulator){
-        let idd=buff.sendint(4)
-        console.log('Request ID = ', idd)
+    private constructor(
+        private readonly id:number,
+        private readonly flags:DNSFlags,
+        private readonly QDCount:number,
+        private readonly ANCount:number,
+        private readonly NSCount:number,
+        private readonly ARCount:number
+    ){}
+
+    get ID(){
+        return this.ID
+    }
+
+    get FLAGS(){
+        return this.flags
+    }
+
+    get QDCOUNT(){
+        return this.QDCOUNT
+    }
+
+    get ANCOUNT(){
+        return this.ANCount
     }
     
-    parseFlag(buff: bufferManipulator){
-
-        let flag=buff.sendbin(4)
-        const flag_Data={
-            QR: parseInt(flag[0],2),
-            OPCode:parseInt(flag.slice(1,5),2),
-            AA:parseInt(flag[5],2),
-            TC:parseInt(flag[6],2),
-            RD:parseInt(flag[7],2),
-            RA:parseInt(flag[8],2),
-            Z:parseInt(flag.slice(9,12),2),
-            RCODE:parseInt(flag.slice(12,),2)
-        }
-        console.log(flag_Data)
+    get NSCOUNT(){
+        return this.NSCount
     }
 
-    decodeHeader(buff: bufferManipulator){
+    get ARCOUNT(){
+        return this.ARCount
+    }
+
+
+    static headerEncode(){
+        const buffer = Buffer.alloc(12);
+
+        buffer.writeUInt16BE(Math.floor(Math.random()*65535)); 
+
+        // Flags
+        buffer.writeUInt16BE(0x0120, 2);
+
+        // Questions
+        buffer.writeUInt16BE(1, 4);
+
+        // Answer RRs, Authority RRs, Additional RRs
+        buffer.writeUInt16BE(0, 6);
+        buffer.writeUInt16BE(0, 8);
+        buffer.writeUInt16BE(0, 10);
+
+        return buffer
+    }
+
+    static parseId(buff: bufferManipulator){
+        let idd=buff.sendint(4)
+        console.log('Request ID = ', idd)
+        return idd;
+    }
+    
+    static parseFlag(buff: bufferManipulator){
+
+        let flag = new DNSFlags(buff.sendint(2),buff.sendint(2))    // Left byte , Right Byte
+        
+        const flag_Data={
+            QR: flag.qr,
+            OPCode:flag.opCode,
+            AA:flag.aa,
+            TC:flag.tc,
+            RD:flag.rd,
+            RA:flag.ra,
+            Z:flag.z,
+            RCODE:flag.rCode
+        }
+        console.log(flag_Data)
+        return flag
+    }
+
+    static parseMeta(response: bufferManipulator){
+
+        let q_count=response.sendint(4)
+        console.log('Questions Asked',q_count)
+  
+        let a_count=response.sendint(4)
+        console.log('Answer Count =',a_count)
+
+        let auth_count=response.sendint(4)
+        console.log('Authority Count =',auth_count)
+
+        let add_count=response.sendint(4)
+        console.log('Additional Count =',add_count)
+
+        return {q_count,a_count,auth_count,add_count}
+    }
+
+    static decodeHeader(buff: bufferManipulator){
         console.log('-------------')
         console.log("Header Part")
         console.log('-------------')
-        this.parseId(buff)
-        this.parseFlag(buff)
+        let id = this.parseId(buff)
+        let flags = this.parseFlag(buff)
+        const {q_count,a_count,auth_count,add_count} =this.parseMeta(buff)
+        
+        return new Header(id,flags,q_count,a_count,auth_count,add_count)
     }
 
 }

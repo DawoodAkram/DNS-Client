@@ -1,4 +1,8 @@
-import { off } from "process";
+class outOfBoundAccess extends Error{
+    constructor(n:number){
+        super(`Less than ${n} bytes remaining`)
+    }
+}
 
 class bufferManipulator{
     
@@ -10,7 +14,14 @@ class bufferManipulator{
         this.offset=0
     }
 
+    private verifyHasBytesRemaining(n:number){
+        if((this.response.byteLength - this.offset/2)<n){
+            throw new outOfBoundAccess(n)
+        }
+    }
+
     sendint(length:number):number{
+        this.verifyHasBytesRemaining(length/2)
         let str=this.response.toString('hex')
         let idd= str.slice(this.offset,this.offset+length)
         this.offset+=length
@@ -18,6 +29,8 @@ class bufferManipulator{
     }
 
     sendstr(length:number):string{
+        this.verifyHasBytesRemaining(length/2)
+
         let str=this.response.toString('hex')
         let name:string=""
         for(let j:number=0 ;j<length;j++){
@@ -28,30 +41,24 @@ class bufferManipulator{
         }
         return name
     }
+    sendstr2(length:number):string{
+        this.verifyHasBytesRemaining(length/2)
 
-    sendbin(length:number):string{
         let str=this.response.toString('hex')
-        let flag=str.slice(this.offset,this.offset+length)
-        console.log('Flags = ',flag)
-        let b_string:string=''
-        // Iterate over the hex string in pairs
-        for (let i = 0; i < flag.length; i += 2) {
-            const hexPair = flag.substr(i, 2);
-            
-            const decimalValue = parseInt(hexPair, 16);
-            const binaryValue = decimalValue.toString(2).padStart(8, '0');
-            
-            // Append binary value to the result string
-            b_string += binaryValue;
+        let name:string=""
+        for(let j:number=0 ;j<length/2;j++){
+            let ch:string = str.slice(this.offset,this.offset+2)
+            let ascii=parseInt(ch,16)
+            name+=String.fromCharCode(ascii);
+            this.offset+=2
         }
-        this.offset+=length;
-        return b_string
+        return name
     }
 
     peek(length: number): string {
+        this.verifyHasBytesRemaining(length/2)
         let str=this.response.toString('hex')
         let flag=str.slice(this.offset,this.offset+length)
-        console.log('Looking for Offset Value = ',flag)
         let b_string:string=''
         for (let i = 0; i < flag.length; i += 2) {
             const hexPair = flag.substr(i, 2);
@@ -65,6 +72,7 @@ class bufferManipulator{
     }
 
     peekint(index:number){
+        this.verifyHasBytesRemaining(index/2)
         let str=this.response.toString('hex')
         let idd= str[index]
         idd+=str[index+1]
@@ -91,7 +99,12 @@ class bufferManipulator{
     }
 
     add() {
+        console.log(this.offset)
         this.offset+=2
+    }
+
+    readBufferFrom(index:number){
+        return this.response.slice(index)
     }
 
 }
