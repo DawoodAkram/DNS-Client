@@ -110,12 +110,8 @@ class Answer{
                     if(i!=2){
                         name+='.'
                     }    
-                }
-                //console.log('NS =' ,name)
-            
+                }            
         }
-    
-
     }
 
     answerDecode(buff: bufferManipulator, a_count: number){
