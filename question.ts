@@ -64,6 +64,9 @@ class Question{
             case 'ns':
                 QTYPE.writeUInt16BE(0x0002, 0); // QTYPE: NS record
                 break;
+            case 'mx':
+                QTYPE.writeUInt16BE(0x000f, 0); // QTYPE: MX record
+                break;
             default:
                 throw new Error('Unsupported query type');
         }

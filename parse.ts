@@ -9,7 +9,6 @@ function parser(response: Buffer) {
     const head = Header.decodeHeader(buff)
     const ques = new Question()
     const ans = new Answer()
-    //console.log(head)
     ques.quesDecode(buff)
     console.log('-------------')
     console.log("Answer Part")

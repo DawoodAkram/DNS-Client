@@ -72,6 +72,11 @@ class Answer {
         else if (type === 6 || type === 2) {
             console.log('NS = ',this.recursiveAnswer(buff))          
         }
+        else if(type===15){
+            let pre = buff.sendint(4);
+            console.log('Preference = ' , pre)
+            console.log('MX = ',this.recursiveAnswer(buff))          
+        }
     }
 
     recursiveAnswer(buff: bufferManipulator) {
