@@ -41,6 +41,19 @@ class bufferManipulator{
         }
         return name
     }
+    sendstr2(length:number):string{
+        this.verifyHasBytesRemaining(length/2)
+
+        let str=this.response.toString('hex')
+        let name:string=""
+        for(let j:number=0 ;j<length/2;j++){
+            let ch:string = str.slice(this.offset,this.offset+2)
+            let ascii=parseInt(ch,16)
+            name+=String.fromCharCode(ascii);
+            this.offset+=2
+        }
+        return name
+    }
 
     peek(length: number): string {
         this.verifyHasBytesRemaining(length/2)
@@ -88,6 +101,10 @@ class bufferManipulator{
     add() {
         console.log(this.offset)
         this.offset+=2
+    }
+
+    readBufferFrom(index:number){
+        return this.response.slice(index)
     }
 
 }
